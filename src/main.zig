@@ -1,24 +1,45 @@
 const std = @import("std");
+const jsc = @import("./jsc.zig");
+
+const allocator = std.heap.c_allocator;
 
 pub fn main() !void {
-    // Prints to stderr (it's a shortcut based on `std.io.getStdErr()`)
-    std.debug.print("All your {s} are belong to us.\n", .{"codebase"});
+    const context = jsc.jsc_context_new();
+    const global_object = jsc.jsc_context_get_global_object(context);
+    const log_function_name = jsc.jsc_value_new_string("log");
+    const function = jsc.jsc_value_new_function(context, log_function_name, logFromJavascript); //, null, null, 0, null);
+    // ObjectMakeFunctionWithCallback(global_context, log_function_name, logFromJavascript);
 
-    // stdout is for the actual output of your application, for example if you
-    // are implementing gzip, then only the compressed bytes should be sent to
-    // stdout, not any debugging messages.
-    const stdout_file = std.io.getStdOut().writer();
-    var bw = std.io.bufferedWriter(stdout_file);
-    const stdout = bw.writer();
+    jsc.jsc_value_object_set_property(global_object, context, log_function_name, function);
 
-    try stdout.print("Run `zig build test` to run the tests.\n", .{});
-
-    try bw.flush(); // don't forget to flush!
+    const log_call_statement = jsc.jsc_value_new_string(context, "log('Hello from JavaScript inside Zig');");
+    const ret = jsc.jsc_context_evaluate(context, log_call_statement, 1);
+    _ = ret; // autofix
 }
 
-test "simple test" {
-    var list = std.ArrayList(i32).init(std.testing.allocator);
-    defer list.deinit(); // try commenting this out and see if zig detects the memory leak!
-    try list.append(42);
-    try std.testing.expectEqual(@as(i32, 42), list.pop());
+fn logFromJavascript(
+    ctx: jsc.JSCContext,
+    function: jsc.JSCValue,
+    this: jsc.JSCValue,
+    argument_count: usize,
+    _arguments: [*c]const jsc.JSCValue,
+    except: [*c]jsc.JSCValue,
+) callconv(.C) jsc.JSCValue {
+    _ = except; // autofix
+    _ = this; // autofix
+    _ = function; // autofix
+    const args = _arguments[0..argument_count];
+    const input: jsc.JSCValue = jsc.jsc_value_to_string(args[0]);
+
+    var buffer = allocator.alloc(u8, jsc.JSStringGetMaximumUTF8CStringSize(input)) catch unreachable;
+    defer allocator.free(buffer);
+
+    const string_length = jsc.JSStringGetUTF8CString(input, buffer.ptr, buffer.len);
+    const string = buffer[0..string_length];
+
+    var stdout = std.io.getStdOut();
+
+    stdout.writeAll(string) catch {};
+
+    return jsc.JSValueMakeUndefined(ctx);
 }
