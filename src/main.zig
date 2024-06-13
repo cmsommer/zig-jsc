@@ -6,24 +6,18 @@ const select = linq.iterator;
 const allocator = std.heap.c_allocator;
 
 pub fn main() !void {
-    const context = jsc.jsc_context_new();
-    const global_object = jsc.jsc_context_get_global_object(context);
+    const context_group = jsc.JSContextGroupCreate();
+    const context = jsc.JSContextGetGlobalContext(context_group);
+    const global_object = jsc.JSContextGetGlobalObject(context);
 
-    const a = @typeInfo(@TypeOf(log));
-    const args = a.Fn.params;
-
-    // for (args) |arg| {
-    //     arg.type;
-    // }
-
-    const logsomething_function = jsc.jsc_value_new_function_variadic(context, "logsomething", logsomething, null, null, 0);
-    const log_function = jsc.jsc_value_new_functionv(context, "log", log, null, null, 0, args.len, jsc.GType);
-    const render_function = jsc.jsc_value_new_functionv(context, "render", log, null, null, 0, args.len, null);
+    const logsomething_fn = jsc.JSObjectMakeFunction(context, "logsomething", logsomething, null, null, 0);
+    const log_fn = jsc.jsc_value_new_functionv(context, "log", log, null, null, 0, args.len, jsc.GType);
+    const render_fn = jsc.jsc_value_new_functionv(context, "render", log, null, null, 0, args.len, null);
     // ObjectMakeFunctionWithCallback(global_context, log_function_name, logFromJavascript);
 
-    jsc.jsc_value_object_set_property(global_object, "logsomething", logsomething_function);
-    jsc.jsc_value_object_set_property(global_object, "log", log_function);
-    jsc.jsc_value_object_set_property(global_object, "render", render_function);
+    jsc.jsc_value_object_set_property(global_object, "logsomething", logsomething_fn);
+    jsc.jsc_value_object_set_property(global_object, "log", log_fn);
+    jsc.jsc_value_object_set_property(global_object, "render", render_fn);
 
     const log_call_statement = "log('Hello from JavaScript inside Zig');";
     const logsomething_call_statement = "logsomething();";

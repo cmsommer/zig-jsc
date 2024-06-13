@@ -20,8 +20,8 @@ pub fn build(b: *std.Build) void {
     });
 
     exe.linkLibC();
-    // exe.linkSystemLibrary("javascriptcoregtk-4.1");
-    exe.linkSystemLibrary("javascriptcoregtk-6.0");
+    exe.linkSystemLibrary("javascriptcoregtk-4.1");
+    // exe.linkSystemLibrary("javascriptcoregtk-6.0");
     // exe.root_module.addImport("zig-jsc", lib);
 
     b.installArtifact(exe);
