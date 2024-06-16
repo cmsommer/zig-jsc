@@ -1,16 +1,17 @@
 const std = @import("std");
 
 pub fn build(b: *std.Build) void {
-    const target = b.standardTargetOptions(.{});
+    const windows = b.option(bool, "windows", "Target Microsoft Windows") orelse false;
+
+    const target = b.resolveTargetQuery(.{ .os_tag = if (windows) .windows else .linux });
+    // const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    // const lib = b.addModule("zig-jsc-test", .{
-    //     .root_source_file = b.path("src/root.zig"),
-    //     .target = target,
-    //     .optimize = optimize,
-    // });
-    // lib.addIncludePath(.{ .cwd_relative = "/usr/include/glib-2.0/" });
-    // lib.addIncludePath(.{ .cwd_relative = "/usr/include/webkitgtk-6.0/" });
+    const zig_jsc = b.dependency("zig_jsc", .{});
+    const lib = zig_jsc.artifact("zig-jsc");
+
+    // lib.linkSystemLibrary("javascriptcoregtk-4.1");
+    // lib.linkLibC();
 
     const exe = b.addExecutable(.{
         .name = "zig-jsc-test",
@@ -19,10 +20,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    exe.linkLibC();
-    exe.linkSystemLibrary("javascriptcoregtk-4.1");
-    // exe.linkSystemLibrary("javascriptcoregtk-6.0");
-    // exe.root_module.addImport("zig-jsc", lib);
+    exe.linkLibrary(lib);
 
     b.installArtifact(exe);
 
