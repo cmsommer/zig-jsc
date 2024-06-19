@@ -7,11 +7,9 @@ pub fn build(b: *std.Build) void {
     // const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const zig_jsc = b.dependency("zig_jsc", .{});
+    const zig_jsc = b.dependency("zig_jsc", .{ .target = target, .optimize = optimize });
     const lib = zig_jsc.artifact("zig-jsc");
-
-    // lib.linkSystemLibrary("javascriptcoregtk-4.1");
-    // lib.linkLibC();
+    const mod = zig_jsc.module("zig-jsc");
 
     const exe = b.addExecutable(.{
         .name = "zig-jsc-test",
@@ -21,6 +19,8 @@ pub fn build(b: *std.Build) void {
     });
 
     exe.linkLibrary(lib);
+    exe.root_module.addImport("zig-jsc", mod);
+    exe.linkLibC();
 
     b.installArtifact(exe);
 

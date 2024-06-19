@@ -5,34 +5,34 @@ const allocator = std.heap.c_allocator;
 
 pub fn main() !void {
     const context = jsc.createContext();
-    const global_object: jsc.JSObjectRef = jsc.JSContextGetGlobalObject(context);
+    const global_object = jsc.getGlobalObject(context);
 
-    const logsomething_name: jsc.JSStringRef = jsc.JSStringCreateWithUTF8CString("logsomething");
-    const log_name: jsc.JSStringRef = jsc.JSStringCreateWithUTF8CString("log");
-    const render_name: jsc.JSStringRef = jsc.JSStringCreateWithUTF8CString("render");
+    const logsomething_name = jsc.createString("logsomething");
+    const log_name = jsc.createString("log");
+    const render_name = jsc.createString("render");
 
-    const log_fn: jsc.JSObjectRef = jsc.JSObjectMakeFunctionWithCallback(context, log_name, log);
-    const render_fn: jsc.JSObjectRef = jsc.JSObjectMakeFunctionWithCallback(context, render_name, render);
+    const log_fn = jsc.createFunction(context, log_name, log);
+    const render_fn = jsc.createFunction(context, render_name, render);
 
     // const console_obj = jsc.JSObjectMake(context, jsClass: JSClassRef, data: ?*anyopaque)
 
-    jsc.JSObjectSetProperty(context, global_object, log_name, log_fn, jsc.kJSPropertyAttributeNone, null);
-    jsc.JSObjectSetProperty(context, global_object, render_name, render_fn, jsc.kJSPropertyAttributeNone, null);
+    jsc.setProperty(context, global_object, log_name, log_fn);
+    jsc.setProperty(context, global_object, render_name, render_fn);
 
-    const log_call_statement: jsc.JSStringRef = jsc.JSStringCreateWithUTF8CString("log('Hello from JavaScript inside Zig');");
-    const render_call_statement: jsc.JSStringRef = jsc.JSStringCreateWithUTF8CString("const a = render();");
+    const log_call_statement = jsc.createString("log('Hello from JavaScript inside Zig');");
+    const render_call_statement = jsc.createString("const a = render();");
 
-    _ = jsc.JSEvaluateScript(context, log_call_statement, null, null, 1, null);
-    _ = jsc.JSEvaluateScript(context, render_call_statement, null, null, 1, null);
+    _ = jsc.evaluateScript(context, log_call_statement);
+    _ = jsc.evaluateScript(context, render_call_statement);
 
-    jsc.JSGlobalContextRelease(context);
+    jsc.releaseContext(context);
 
-    jsc.JSStringRelease(log_call_statement);
-    jsc.JSStringRelease(render_call_statement);
+    jsc.releaseString(log_call_statement);
+    jsc.releaseString(render_call_statement);
 
-    jsc.JSStringRelease(logsomething_name);
-    jsc.JSStringRelease(log_name);
-    jsc.JSStringRelease(render_name);
+    jsc.releaseString(logsomething_name);
+    jsc.releaseString(log_name);
+    jsc.releaseString(render_name);
 }
 
 fn log(
@@ -48,17 +48,17 @@ fn log(
     _ = function; // autofix
 
     const args = arguments[0..argument_count];
-    const input: jsc.JSStringRef = jsc.JSValueToStringCopy(ctx, args[0], null);
+    const input = jsc.valueToString(ctx, args[0]);
 
-    var buffer = allocator.alloc(u8, jsc.JSStringGetMaximumUTF8CStringSize(input)) catch unreachable;
+    var buffer = allocator.alloc(u8, jsc.getStringMaxSize(input)) catch unreachable;
     defer allocator.free(buffer);
 
-    const string_length = jsc.JSStringGetUTF8CString(input, buffer.ptr, buffer.len);
+    const string_length = jsc.createStringWithBuffer(input, buffer.ptr, buffer.len);
     const string = buffer[0..string_length];
 
     const out = std.io.getStdOut().writer();
     out.print("log {s}", .{string}) catch {};
-    return jsc.JSValueMakeUndefined(ctx);
+    return jsc.createUndefined(ctx);
 }
 
 fn render(
@@ -77,5 +77,5 @@ fn render(
     const out = std.io.getStdOut();
     out.writeAll("Render") catch {};
 
-    return jsc.JSValueMakeUndefined(ctx);
+    return jsc.createUndefined(ctx);
 }
