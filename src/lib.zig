@@ -1,4 +1,4 @@
-const jsc = @import("./localjsc.zig");
+const jsc = @import("jsc.zig");
 
 pub const JSContextRef = jsc.JSContextRef;
 pub const JSStringRef = jsc.JSStringRef;
@@ -57,4 +57,9 @@ pub fn releaseContext(context: jsc.JSGlobalContextRef) void {
 
 pub fn releaseString(string: JSStringRef) void {
     jsc.JSStringRelease(string);
+}
+
+test "Create Context" {
+    const context = createContext();
+    _ = context; // autofix
 }

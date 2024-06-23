@@ -16,16 +16,28 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
-    mod.linkSystemLibrary("", .{});
+    lib.linkLibC();
+    // lib.linkLibCpp();
+
+    // lib.addLibraryPath(.{ .cwd_relative = "/usr/lib/x86_64-linux-gnu/" });
+    lib.addLibraryPath(b.path("jsc/lib/x86_64-linux/"));
+    lib.linkSystemLibrary("JavaScriptCore");
+
+    mod.addLibraryPath(b.path("jsc/lib/x86_64-linux/"));
+    mod.linkSystemLibrary("JavaScriptCore", .{
+        .needed = true,
+        .preferred_link_mode = .dynamic,
+    });
+
     // switch (target.result.os.tag) {
     //     .windows => {
     //         mod.addObjectFile(b.path("jsc/lib/x86_64-windows/libJavaScriptCore.lib"));
     //         lib.addObjectFile(b.path("jsc/lib/x86_64-windows/libJavaScriptCore.lib"));
     //     },
     //     else => {
-    mod.addObjectFile(b.path("jsc/lib/x86_64-linux/libbmalloc.a"));
-    mod.addObjectFile(b.path("jsc/lib/x86_64-linux/libWTF.a"));
-    mod.addObjectFile(b.path("jsc/lib/x86_64-linux/libJavaScriptCore.a"));
+    // mod.addObjectFile(b.path("jsc/lib/x86_64-linux/libbmalloc.a"));
+    // mod.addObjectFile(b.path("jsc/lib/x86_64-linux/libWTF.a"));
+    // mod.addObjectFile(b.path("jsc/lib/x86_64-linux/libJavaScriptCore.a"));
     //     },
     // }
 
