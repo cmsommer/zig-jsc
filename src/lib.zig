@@ -5,6 +5,11 @@ pub const JSStringRef = jsc.JSStringRef;
 pub const JSObjectRef = jsc.JSObjectRef;
 pub const JSValueRef = jsc.JSValueRef;
 
+const JSError = error{
+    EvaluateError,
+    ConvertError,
+};
+
 pub fn createContext() jsc.JSGlobalContextRef {
     const context_group: jsc.JSContextGroupRef = jsc.JSContextGroupCreate();
     const context: jsc.JSGlobalContextRef = jsc.JSGlobalContextCreateInGroup(context_group, null);
@@ -35,6 +40,10 @@ pub fn createFunction(context: jsc.JSGlobalContextRef, name: jsc.JSStringRef, ca
     return function;
 }
 
+pub fn createObject(context: jsc.JSGlobalContextRef) jsc.JSObjectRef {
+    return jsc.JSObjectMake(context, null, null);
+}
+
 pub fn createUndefined(context: jsc.JSContextRef) jsc.JSValueRef {
     return jsc.JSValueMakeUndefined(context);
 }
@@ -44,11 +53,21 @@ pub fn setProperty(context: jsc.JSGlobalContextRef, obj: jsc.JSObjectRef, name: 
 }
 
 pub fn evaluateScript(context: jsc.JSContextRef, script: jsc.JSStringRef) jsc.JSValueRef {
-    return jsc.JSEvaluateScript(context, script, null, null, 1, null);
+    // const exp: jsc.JSValueRef = undefined;
+    const ret = jsc.JSEvaluateScript(context, script, null, null, 1, null);
+    // if (exp == undefined) {
+    return ret;
+    // }
+    // return JSError.EvaluateError;
 }
 
 pub fn valueToString(context: jsc.JSContextRef, name: jsc.JSValueRef) jsc.JSStringRef {
-    return jsc.JSValueToStringCopy(context, name, null);
+    // const exp: jsc.JSValueRef = undefined;
+    const ret = jsc.JSValueToStringCopy(context, name, null);
+    // if (exp == undefined) {
+    return ret;
+    // }
+    // return JSError.ConvertError;
 }
 
 pub fn releaseContext(context: jsc.JSGlobalContextRef) void {
