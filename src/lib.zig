@@ -40,6 +40,10 @@ pub fn createFunction(context: jsc.JSGlobalContextRef, name: jsc.JSStringRef, ca
     return function;
 }
 
+pub fn createBoolean(context: jsc.JSContextRef, value: bool) jsc.JSValueRef {
+    return jsc.JSValueMakeBoolean(context, value);
+}
+
 pub fn createObject(context: jsc.JSGlobalContextRef) jsc.JSObjectRef {
     return jsc.JSObjectMake(context, null, null);
 }
