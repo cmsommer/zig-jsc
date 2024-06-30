@@ -17,6 +17,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
     lib.linkLibC();
+    mod.addImport("zig-jsc", mod);
     // lib.linkLibCpp();
 
     // lib.addLibraryPath(.{ .cwd_relative = "/usr/lib/x86_64-linux-gnu/" });
