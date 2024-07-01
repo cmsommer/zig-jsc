@@ -1,6 +1,6 @@
-const zjsc = @import("root");
+const root = @import("zig-jsc");
 
-const jsc = zjsc.jsc_capi;
+const jsc = root.jsc_c_api;
 
 pub const JSContextRef = jsc.JSContextRef;
 pub const JSContextGroupRef = jsc.JSContextGroupRef;

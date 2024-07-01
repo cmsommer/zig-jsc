@@ -1,7 +1,7 @@
 const std = @import("std");
-const root = @import("root");
+const root = @import("zig-jsc");
 
-const jsc = root.jsc_capi;
+const jsc = root.jsc_c_api;
 const types = root.jsc_types;
 const function = root.jsc_functions;
 
@@ -80,15 +80,24 @@ pub const Value = struct {
         return init(context, jsc.JSObjectMake(context.contextRef, null, null));
     }
 
-    pub fn init_function(name: []u8, callback: root.JSCallback, context: types.Context) Value {
-        return init(context, function.createFunction(context, name, callback));
+    pub fn init_function(name: []const u8, callback: root.JSCallback, context: types.Context) Value {
+        const jsname = function.createString(@alignCast(name));
+        defer function.releaseString(jsname);
+
+        return init(context, function.createFunction(context.contextRef, jsname, callback));
     }
 
-    pub fn setProperty(self: Value, key: []u8, value: Value) void {
-        const jskey = function.createString(key);
+    /// Assume this object in a object and try to set a property on it
+    pub fn setProperty(self: Value, key: []const u8, value: Value) !void {
+        if (!jsc.JSValueIsObject(self.context.contextRef, self.valueRef))
+            return error.ConvertError;
+
+        const jskey = function.createString(@alignCast(key));
         defer function.releaseString(jskey);
 
-        function.setProperty(self.context.contextRef, self.valueRef, jskey, value.valueRef);
+        const obj = jsc.JSValueToObject(self.context.contextRef, self.valueRef, null);
+
+        function.setProperty(self.context.contextRef, obj, jskey, value.valueRef);
     }
 
     pub fn release(self: Value) void {

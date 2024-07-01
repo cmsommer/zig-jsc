@@ -2,12 +2,14 @@ const std = @import("std");
 const zjsc = @import("zig-jsc");
 
 const jsc = zjsc.jsc_types;
-const types = zjsc.jsc_types;
+const c_api = zjsc.jsc_c_api;
 
 const allocator = std.heap.c_allocator;
 
 pub fn main() !void {
-    const context = jsc.Context.init();
+    const vm = jsc.VM.init();
+    const conf = jsc.Configuration.init();
+    const context = jsc.Context.init_with_vm(vm, conf);
     defer context.release();
 
     const global_object = context.getGlobal();
@@ -15,20 +17,20 @@ pub fn main() !void {
     const log_name = "log";
     const render_name = "render";
 
-    const log_fn = context.createFunction(context, log_name, log);
-    const render_fn = context.createFunction(context, render_name, render);
+    const log_fn = context.createFunction(log_name, log);
+    const render_fn = context.createFunction(render_name, render);
 
-    context.setProperty(global_object, log_name, log_fn);
-    context.setProperty(global_object, render_name, render_fn);
+    try global_object.setProperty(log_name, log_fn);
+    try global_object.setProperty(render_name, render_fn);
 
     const log_call_statement = "log('Hello from JavaScript inside Zig');";
     const render_call_statement = "const a = render();";
 
-    context.evaluateScript(log_call_statement);
-    context.evaluateScript(render_call_statement);
+    _ = context.evaluateScript(log_call_statement);
+    _ = context.evaluateScript(render_call_statement);
 }
 
-fn log(ctx: types.Context, function: types.Value, this: types.Value, argument_count: usize, arguments: []types.Value, except: []types.Value) types.Value {
+fn log(ctx: jsc.Context, function: jsc.Value, this: jsc.Value, argument_count: usize, arguments: []jsc.Value, except: []jsc.Value) jsc.Value {
     _ = except; // autofix
     _ = this; // autofix
     _ = function; // autofix
@@ -47,7 +49,7 @@ fn log(ctx: types.Context, function: types.Value, this: types.Value, argument_co
     return jsc.createUndefined(ctx);
 }
 
-fn render(ctx: types.Context, function: types.Value, this: types.Value, argument_count: usize, arguments: []types.Value, except: []types.Value) types.Value {
+fn render(ctx: jsc.Context, function: jsc.Value, this: jsc.Value, argument_count: usize, arguments: []jsc.Value, except: []jsc.Value) jsc.Value {
     _ = except; // autofix
     _ = arguments; // autofix
     _ = argument_count; // autofix

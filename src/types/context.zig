@@ -30,8 +30,9 @@ pub const VM = struct {
     groupRef: jsc.JSContextGroupRef,
 
     pub fn init() VM {
+        const group = jsc.JSContextGroupCreate();
         return VM{
-            .groupRef = jsc.JSContextGroupCreate(),
+            .groupRef = group,
         };
     }
 
@@ -48,7 +49,7 @@ pub const VM = struct {
 };
 
 /// Context configuration.
-const Configuration = struct {
+pub const Configuration = struct {
     /// Whether scripts evaluated by this context should be assessed in `strict` mode. Defaults to `true`.
     strict: bool,
 
@@ -56,7 +57,7 @@ const Configuration = struct {
     // scriptLoader: JXScriptLoader
 
     /// The logging function to use for JX log messages.
-    log: fn (text: []u8) void,
+    // log: fn (text: []u8) void,
 
     /// Whether dynamic reloading of JavaScript script resources is enabled.
     pub fn is_dynamic_reload_enabled() bool {
@@ -80,13 +81,13 @@ const Configuration = struct {
             // .log = log,
         };
     }
-    pub fn init_log(comptime log: fn ([]u8) void) Configuration {
-        return Configuration{
-            .strict = true,
-            // self.scriptLoader = scriptLoader ?? DefaultScriptLoader(),
-            .log = log,
-        };
-    }
+    // pub fn init_log(comptime log: fn ([]u8) void) Configuration {
+    //     return Configuration{
+    //         .strict = true,
+    //         // self.scriptLoader = scriptLoader ?? DefaultScriptLoader(),
+    //         .log = log,
+    //     };
+    // }
 };
 
 pub const Context = struct {
@@ -178,15 +179,18 @@ pub const Context = struct {
         return types.Value.init_object(self);
     }
 
-    pub fn createFunction(self: Context, name: []u8, callback: root.JSCallback) types.Value {
-        return types.Value.init_function(self, name, callback);
+    pub fn createFunction(self: Context, name: []const u8, callback: root.JSCallback) types.Value {
+        return types.Value.init_function(name, callback, self);
     }
 
-    pub fn setProperty(self: Context, object: types.Value, name: []u8, value: types.Value) void {
-        object.setProperty(name, value, self);
+    pub fn setProperty(object: types.Value, name: []const u8, value: types.Value) void {
+        object.setProperty(name, value);
     }
 
-    pub fn evaluateScript(self: Context, script: []u8) void {
-        function.evaluateScript(self, script);
+    pub fn evaluateScript(self: Context, script: []const u8) types.Value {
+        const jsscript = function.createString(@alignCast(script));
+        defer function.releaseString(jsscript);
+
+        return types.Value.init(self, function.evaluateScript(self.contextRef, jsscript));
     }
 };
