@@ -84,7 +84,12 @@ pub const Value = struct {
         const jsname = function.createString(@alignCast(name));
         defer function.releaseString(jsname);
 
-        return init(context, function.createFunction(context.contextRef, jsname, callback));
+        const cb = fn (ctx: jsc.JSContextRef, func: jsc.JSObjectRef, this: jsc.JSObjectRef, count: usize, args: [*c]const jsc.JSValueRef, exp: [*c]jsc.JSValueRef) callconv(.C) jsc.JSValueRef{
+            const c = types.Context.init()
+            return callback()
+        };
+
+        return init(context, function.createFunction(context.contextRef, jsname, cb));
     }
 
     /// Assume this object in a object and try to set a property on it
