@@ -101,7 +101,7 @@ pub const Context = struct {
     contextRef: jsc.JSGlobalContextRef,
 
     /// Creates `Context`. `Value` references may be used interchangably with multiple instances of `Context` with the same `VM`, but sharing between  separate `VM`s will result in undefined behavior.
-    pub fn init() Context {
+    pub inline fn init() Context {
         const vm = VM.init();
         const configuration = Configuration.init();
 
@@ -134,6 +134,16 @@ pub const Context = struct {
         return Context{
             .vm = vm,
             .contextRef = jsc.JSGlobalContextCreateInGroup(vm.groupRef, null),
+            .configuration = configuration,
+        };
+    }
+    pub fn init_wrap(context: jsc.ContextRef) Context {
+        const vm = types.VM.init_with_group(jsc.JSContextGetGroup(context));
+        const configuration = Configuration.init();
+
+        return Context{
+            .vm = vm,
+            .contextRef = context,
             .configuration = configuration,
         };
     }

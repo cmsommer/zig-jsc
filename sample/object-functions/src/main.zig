@@ -7,9 +7,7 @@ const c_api = zjsc.jsc_c_api;
 const allocator = std.heap.c_allocator;
 
 pub fn main() !void {
-    const vm = jsc.VM.init();
-    const conf = jsc.Configuration.init();
-    const context = jsc.Context.init_with_vm(vm, conf);
+    const context = jsc.Context.init();
     defer context.release();
 
     const global_object = context.getGlobal();

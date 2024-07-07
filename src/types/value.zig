@@ -28,7 +28,7 @@ pub const Value = struct {
     ///
     /// - Parameters:
     ///   - context: The execution context to use.
-    pub fn init_undefined(context: types.Context) Value {
+    pub inline fn init_undefined(context: types.Context) Value {
         return init(context, jsc.JSValueMakeUndefined(context.contextRef));
     }
 
@@ -70,39 +70,6 @@ pub const Value = struct {
         }
 
         return init(context, jsc.JSValueMakeString(context.contextRef, jsvalue));
-    }
-
-    /// Creates a JavaScript `Object`.
-    ///
-    /// - Parameters:
-    ///   - context: The execution context to use.
-    pub fn init_object(context: types.Context) Value {
-        return init(context, jsc.JSObjectMake(context.contextRef, null, null));
-    }
-
-    pub fn init_function(name: []const u8, callback: root.JSCallback, context: types.Context) Value {
-        const jsname = function.createString(@alignCast(name));
-        defer function.releaseString(jsname);
-
-        const cb = fn (ctx: jsc.JSContextRef, func: jsc.JSObjectRef, this: jsc.JSObjectRef, count: usize, args: [*c]const jsc.JSValueRef, exp: [*c]jsc.JSValueRef) callconv(.C) jsc.JSValueRef{
-            const c = types.Context.init()
-            return callback()
-        };
-
-        return init(context, function.createFunction(context.contextRef, jsname, cb));
-    }
-
-    /// Assume this object in a object and try to set a property on it
-    pub fn setProperty(self: Value, key: []const u8, value: Value) !void {
-        if (!jsc.JSValueIsObject(self.context.contextRef, self.valueRef))
-            return error.ConvertError;
-
-        const jskey = function.createString(@alignCast(key));
-        defer function.releaseString(jskey);
-
-        const obj = jsc.JSValueToObject(self.context.contextRef, self.valueRef, null);
-
-        function.setProperty(self.context.contextRef, obj, jskey, value.valueRef);
     }
 
     pub fn release(self: Value) void {
