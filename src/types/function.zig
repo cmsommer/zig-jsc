@@ -5,7 +5,7 @@ const types = root.jsc_types;
 
 const Function = struct {
     context: jsc.ContextRef,
-    valueRef: jsc.JSValueRef,
+    valueRef: jsc.JSObjectRef,
 
     pub fn init(name: []const u8, callback: root.JSCallback, context: types.Context) Function {
         const jsname = Function.createString(@alignCast(name));
@@ -18,7 +18,13 @@ const Function = struct {
         };
     }
 
-    pub fn cb(self: Function, ctx: jsc.JSContextRef, func: jsc.JSObjectRef, this: jsc.JSObjectRef, count: usize, args: [*c]const jsc.JSValueRef, exp: [*c]jsc.JSValueRef) callconv(.C) jsc.JSValueRef {
+    fn createCallback(self: Function) jsc.JSObjectCallAsFunctionCallback {
+        _ = self; // autofix
+        _ = cb; // autofix
+        const cb: jsc.JSObjectCallAsFunctionCallback = jscallback;
+    }
+
+    fn jscallback(ctx: jsc.JSContextRef, func: jsc.JSObjectRef, this: jsc.JSObjectRef, count: usize, args: [*c]const jsc.JSValueRef, exp: [*c]jsc.JSValueRef) callconv(.C) jsc.JSValueRef {
         const ctxWrap = types.Context.init_wrap(ctx);
         const funcWrap = types.Value.init(func);
         const thisWrap = types.Value.init(this);
@@ -26,5 +32,9 @@ const Function = struct {
         // const expWrap = exp: [*c]jsc.JSValueRef
 
         return callback(ctxWrap, funcWrap, thisWrap, args, exp);
+    }
+
+    pub fn asValue(self: Function) types.Value {
+        _ = self; // autofix
     }
 };

@@ -155,8 +155,8 @@ pub const Context = struct {
     // /// For use by service providers only.
     // public var spi: JXContextSPI?
 
-    pub fn getGlobal(self: Context) types.Value {
-        return types.Value.init(self, jsc.JSContextGetGlobalObject(self.contextRef));
+    pub fn getGlobal(self: Context) types.Object {
+        return types.Object.init(self, jsc.JSContextGetGlobalObject(self.contextRef));
     }
 
     /// Creates a JavaScript value of the `undefined` type.
