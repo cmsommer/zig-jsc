@@ -71,6 +71,9 @@ pub const Value = struct {
 
         return init(context, jsc.JSValueMakeString(context.contextRef, jsvalue));
     }
+    pub inline fn init_function(name: jsc.JSStringRef, cb: jsc.JSObjectCallAsFunctionCallback, context: types.Context) Value {
+        return init(context, function.createFunction(context.contextRef, name, cb));
+    }
 
     pub fn release(self: Value) void {
         jsc.JSValueUnprotect(self.context.contextRef, self.valueRef);

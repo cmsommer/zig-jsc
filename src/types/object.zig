@@ -4,6 +4,14 @@ const jsc = root.jsc_c_api;
 const types = root.jsc_types;
 const function = root.jsc_functions;
 
+pub inline fn init_obj(context: types.Context, objectRef: jsc.JSObjectRef) Object {
+    jsc.JSValueProtect(context.contextRef, objectRef);
+    return Object{
+        .context = context,
+        .objectRef = objectRef,
+    };
+}
+
 /// Creates a JavaScript `Object`.
 ///
 /// Parameters:
@@ -13,12 +21,9 @@ pub inline fn init(context: types.Context) Object {
     return init_obj(context, objectRef);
 }
 
-pub inline fn init_obj(context: types.Context, objectRef: jsc.JSObjectRef) Object {
-    jsc.JSValueProtect(context.contextRef, objectRef);
-    return Object{
-        .context = context,
-        .objectRef = objectRef,
-    };
+pub inline fn init_array(context: types.Context, arr: []) Object {
+    const objectRef = jsc.JSObjectMakeArray(context.contextRef, );
+    return init_obj(context, objectRef);
 }
 
 const Object = struct {
