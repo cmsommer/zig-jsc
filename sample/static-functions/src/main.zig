@@ -1,5 +1,7 @@
 const std = @import("std");
-const jsc = @import("zig-jsc");
+const zjsc = @import("zig-jsc");
+
+const jsc = zjsc.jsc_functions;
 
 const allocator = std.heap.c_allocator;
 

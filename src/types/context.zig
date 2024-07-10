@@ -1,9 +1,7 @@
 const std = @import("std");
-const root = @import("zig-jsc");
+const zjsc = @import("zig-jsc");
 
-const jsc = root.jsc_c_api;
-const types = root.jsc_types;
-const function = root.jsc_functions;
+const jsc = zjsc.c_api;
 
 /// Type similar to `Combine.Cancellable` that is used to cancel subscriptions to events.
 pub const Cancellable = struct {
@@ -138,7 +136,7 @@ pub const Context = struct {
         };
     }
     pub fn init_wrap(context: jsc.ContextRef) Context {
-        const vm = types.VM.init_with_group(jsc.JSContextGetGroup(context));
+        const vm = zjsc.VM.init_with_group(jsc.JSContextGetGroup(context));
         const configuration = Configuration.init();
 
         return Context{
@@ -155,52 +153,52 @@ pub const Context = struct {
     // /// For use by service providers only.
     // public var spi: JXContextSPI?
 
-    pub fn getGlobal(self: Context) types.Object {
-        return types.Object.init(self, jsc.JSContextGetGlobalObject(self.contextRef));
+    pub fn getGlobal(self: Context) zjsc.Object {
+        return zjsc.Object.init_obj(self, jsc.JSContextGetGlobalObject(self.contextRef));
     }
 
     /// Creates a JavaScript value of the `undefined` type.
-    pub fn createUndefined(self: types.Context) types.Value {
-        return types.Value.init_undefined(self);
+    pub fn createUndefined(self: zjsc.Context) zjsc.Value {
+        return zjsc.Value.init_undefined(self);
     }
 
     /// Creates a JavaScript value of the `null` type.
-    pub fn createNull(self: types.Context) types.Value {
-        return types.Value.init_null(self);
+    pub fn createNull(self: zjsc.Context) zjsc.Value {
+        return zjsc.Value.init_null(self);
     }
 
     /// Creates a JavaScript `Boolean` value.
-    pub fn createBool(self: types.Context, value: bool) types.Value {
-        return types.Value.init_bool(value, self);
+    pub fn createBool(self: zjsc.Context, value: bool) zjsc.Value {
+        return zjsc.Value.init_bool(value, self);
     }
 
     /// Creates a JavaScript value of the `Number` type.
-    pub fn createNumber(self: types.Context, comptime T: type, value: T) types.Value {
-        return types.Value.init_number(value, self);
+    pub fn createNumber(self: zjsc.Context, comptime T: type, value: T) zjsc.Value {
+        return zjsc.Value.init_number(value, self);
     }
 
     /// Creates a JavaScript value of the `String` type.
-    pub fn createString(self: types.Context, value: []u8) types.Value {
-        return types.Value.init_string(value, self);
+    pub fn createString(self: zjsc.Context, value: []u8) zjsc.Value {
+        return zjsc.Value.init_string(value, self);
     }
 
     /// Creates a JavaScript `Object`.
-    pub fn createObject(self: Context) types.Value {
-        return types.Value.init_object(self);
+    pub fn createObject(self: Context) zjsc.Value {
+        return zjsc.Value.init_object(self);
     }
 
-    pub fn createFunction(self: Context, name: []const u8, callback: root.JSCallback) types.Value {
-        return types.Value.init_function(name, callback, self);
+    pub fn createFunction(self: Context, name: []const u8, callback: jsc.JSObjectCallAsFunctionCallback) zjsc.Value {
+        return zjsc.Value.init_function(name, callback, self);
     }
 
-    pub fn setProperty(object: types.Value, name: []const u8, value: types.Value) void {
+    pub fn setProperty(object: zjsc.Value, name: []const u8, value: zjsc.Value) void {
         object.setProperty(name, value);
     }
 
-    pub fn evaluateScript(self: Context, script: []const u8) types.Value {
-        const jsscript = function.createString(@alignCast(script));
-        defer function.releaseString(jsscript);
+    pub fn evaluateScript(self: Context, script: []const u8) zjsc.Value {
+        const jsscript = zjsc.createString(@alignCast(script));
+        defer zjsc.releaseString(jsscript);
 
-        return types.Value.init(self, function.evaluateScript(self.contextRef, jsscript));
+        return zjsc.Value.init(self, zjsc.evaluateScript(self.contextRef, jsscript));
     }
 };

@@ -1,13 +1,12 @@
 const std = @import("std");
 const zjsc = @import("zig-jsc");
 
-const jsc = zjsc.jsc_types;
-const c_api = zjsc.jsc_c_api;
+const c_api = zjsc.c_api;
 
 const allocator = std.heap.c_allocator;
 
 pub fn main() !void {
-    const context = jsc.Context.init();
+    const context = zjsc.Context.init();
     defer context.release();
 
     const global_object = context.getGlobal();
@@ -27,14 +26,13 @@ pub fn main() !void {
     _ = context.evaluateScript(log_call_statement);
     _ = context.evaluateScript(render_call_statement);
 }
-
-fn log(ctx: jsc.Context, function: jsc.Value, this: jsc.Value, argument_count: usize, arguments: []jsc.Value, except: []jsc.Value) jsc.Value {
-    _ = except; // autofix
+fn log(ctx: c_api.JSContextRef, function: c_api.JSObjectRef, this: c_api.JSObjectRef, argc: usize, args: [*c]const c_api.JSValueRef, exp: [*c]c_api.JSValueRef) callconv(.C) c_api.JSValueRef {
+    _ = exp; // autofix
     _ = this; // autofix
     _ = function; // autofix
 
-    const args = arguments[0..argument_count];
-    const input = args[0].toString();
+    const arguments = args[0..argc];
+    const input = zjsc.toString(ctx, arguments[0]) catch return zjsc.createUndefined(ctx);
 
     // var buffer = allocator.alloc(u8, jsc.getStringMaxSize(input)) catch unreachable;
     // defer allocator.free(buffer);
@@ -44,17 +42,18 @@ fn log(ctx: jsc.Context, function: jsc.Value, this: jsc.Value, argument_count: u
 
     const out = std.io.getStdOut().writer();
     out.print("log {s}", .{input}) catch {};
-    return jsc.createUndefined(ctx);
+    return zjsc.createUndefined(ctx);
 }
 
-fn render(ctx: jsc.Context, function: jsc.Value, this: jsc.Value, argument_count: usize, arguments: []jsc.Value, except: []jsc.Value) jsc.Value {
-    _ = except; // autofix
-    _ = arguments; // autofix
-    _ = argument_count; // autofix
+fn render(ctx: c_api.JSContextRef, function: c_api.JSObjectRef, this: c_api.JSObjectRef, argc: usize, args: [*c]const c_api.JSValueRef, exp: [*c]c_api.JSValueRef) callconv(.C) c_api.JSValueRef {
+    _ = exp; // autofix
+    _ = args; // autofix
+    _ = argc; // autofix
     _ = this; // autofix
     _ = function; // autofix
+
     const out = std.io.getStdOut();
     out.writeAll("Render") catch {};
 
-    return ctx.createUndefined();
+    return zjsc.createUndefined(ctx);
 }

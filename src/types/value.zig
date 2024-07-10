@@ -1,22 +1,20 @@
 const std = @import("std");
-const root = @import("zig-jsc");
+const zjsc = @import("zig-jsc");
 
-const jsc = root.jsc_c_api;
-const types = root.jsc_types;
-const function = root.jsc_functions;
+const jsc = zjsc.c_api;
 
 /// A JavaScript object.
 ///
 /// This wraps a `JSObjectRef`, and is the equivalent of `JavaScriptCore.JSValue`.
 pub const Value = struct {
-    context: types.Context,
+    context: zjsc.Context,
     valueRef: jsc.JSValueRef,
 
-    pub fn init_copy(context: types.Context, value: types.Value) Value {
+    pub fn init_copy(context: zjsc.Context, value: zjsc.Value) Value {
         return init(context, value.valueRef);
     }
 
-    pub fn init(context: types.Context, valueRef: jsc.JSValueRef) Value {
+    pub fn init(context: zjsc.Context, valueRef: jsc.JSValueRef) Value {
         jsc.JSValueProtect(context.contextRef, valueRef);
         return Value{
             .context = context,
@@ -28,7 +26,7 @@ pub const Value = struct {
     ///
     /// - Parameters:
     ///   - context: The execution context to use.
-    pub inline fn init_undefined(context: types.Context) Value {
+    pub inline fn init_undefined(context: zjsc.Context) Value {
         return init(context, jsc.JSValueMakeUndefined(context.contextRef));
     }
 
@@ -36,7 +34,7 @@ pub const Value = struct {
     ///
     /// - Parameters:
     ///   - context: The execution context to use.
-    pub fn init_null(context: types.Context) Value {
+    pub fn init_null(context: zjsc.Context) Value {
         return init(context, jsc.JSValueMakeNull(context.contextRef));
     }
 
@@ -45,7 +43,7 @@ pub const Value = struct {
     /// - Parameters:
     ///   - value: The value to assign to the object.
     ///   - context: The execution context to use.
-    pub fn init_bool(value: bool, context: types.Context) Value {
+    pub fn init_bool(value: bool, context: zjsc.Context) Value {
         return init(context, jsc.JSValueMakeBoolean(context.contextRef, value));
     }
 
@@ -54,7 +52,7 @@ pub const Value = struct {
     /// - Parameters:
     ///   - value: The value to assign to the object.
     ///   - context: The execution context to use.
-    pub fn init_number(comptime T: type, value: T, context: types.Context) Value {
+    pub fn init_number(comptime T: type, value: T, context: zjsc.Context) Value {
         return init(context, jsc.JSValueMakeNumber(context.contextRef, value));
     }
 
@@ -63,7 +61,7 @@ pub const Value = struct {
     /// - Parameters:
     ///   - value: The value to assign to the object.
     ///   - context: The execution context to use.
-    pub fn init_string(value: []u8, context: types.Context) Value {
+    pub fn init_string(value: []u8, context: zjsc.Context) Value {
         const jsvalue: jsc.JSStringRef = jsc.JSStringCreateWithUTF8CString(value);
         defer {
             jsc.JSStringRelease(value);
@@ -71,8 +69,8 @@ pub const Value = struct {
 
         return init(context, jsc.JSValueMakeString(context.contextRef, jsvalue));
     }
-    pub inline fn init_function(name: jsc.JSStringRef, cb: jsc.JSObjectCallAsFunctionCallback, context: types.Context) Value {
-        return init(context, function.createFunction(context.contextRef, name, cb));
+    pub inline fn init_function(name: []const u8, cb: jsc.JSObjectCallAsFunctionCallback, context: zjsc.Context) Value {
+        return init(context, zjsc.createFunction(context.contextRef, zjsc.createString(name), cb));
     }
 
     pub fn release(self: Value) void {
@@ -81,16 +79,6 @@ pub const Value = struct {
 
     /// Assumes value is string and return a zig u8 char string that represents it
     pub fn toString(self: Value) []u8 {
-        if (!jsc.JSValueIsString(self.context.contextRef, self.valueRef)) {
-            return error.ConvertError;
-        }
-
-        const count = jsc.JSStringGetLength(self);
-        const buffer: [*c]u8 = [count]u8{};
-
-        const size = jsc.JSStringGetUTF8CString(self.valueRef, buffer, count);
-        _ = size; // autofix
-
-        return @ptrCast(buffer);
+        return zjsc.toString(self.context.contextRef, self.valueRef);
     }
 };

@@ -1,6 +1,7 @@
-const root = @import("zig-jsc");
+const std = @import("std");
+const zjsc = @import("zig-jsc");
 
-const jsc = root.jsc_c_api;
+const jsc = zjsc.c_api;
 
 pub const JSContextRef = jsc.JSContextRef;
 pub const JSContextGroupRef = jsc.JSContextGroupRef;
@@ -30,9 +31,9 @@ pub fn getStringMaxSize(string: jsc.JSStringRef) usize {
     return jsc.JSStringGetMaximumUTF8CStringSize(string);
 }
 
-pub fn createString(text: [*c]const u8) jsc.JSStringRef {
-    const string = jsc.JSStringCreateWithUTF8CString(text);
-    return string;
+pub fn createString(text: []const u8) jsc.JSStringRef {
+    const cstr: [*c]const u8 = @ptrCast(text);
+    return jsc.JSStringCreateWithUTF8CString(cstr);
 }
 
 pub fn createStringWithBuffer(string: JSStringRef, buf: [*c]u8, size: usize) usize {
@@ -85,6 +86,23 @@ pub fn releaseContext(context: jsc.JSGlobalContextRef) void {
 
 pub fn releaseString(string: JSStringRef) void {
     jsc.JSStringRelease(string);
+}
+
+pub fn toString(context: jsc.JSContextRef, value: JSValueRef) ![:0]u8 {
+    if (!jsc.JSValueIsString(context, value)) {
+        return error.ConvertError;
+    }
+
+    const jsstring = jsc.JSValueToStringCopy(context, value, null);
+
+    const count = jsc.JSStringGetLength(jsstring);
+
+    const buffer: [*c]u8 = 0;
+    const size = jsc.JSStringGetUTF8CString(jsstring, buffer, count);
+    _ = size; // autofix
+
+    const a: [:0]u8 = std.mem.span(buffer);
+    return a;
 }
 
 test "Create Context" {

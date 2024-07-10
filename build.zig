@@ -27,7 +27,6 @@ pub fn build(b: *std.Build) void {
     mod.addLibraryPath(b.path("jsc/lib/x86_64-linux/"));
     mod.linkSystemLibrary("JavaScriptCore", .{
         .needed = true,
-        .preferred_link_mode = .dynamic,
     });
 
     // switch (target.result.os.tag) {
@@ -43,4 +42,14 @@ pub fn build(b: *std.Build) void {
     // }
 
     b.installArtifact(lib);
+
+    const lib_check = b.addStaticLibrary(.{
+        .name = "check",
+        .root_source_file = b.path("sample//object-functions/src/main.zig"),
+        .target = target,
+        .optimize = optimize,
+    });
+
+    const check = b.step("check", "Check if foo compiles");
+    check.dependOn(&lib_check.step);
 }
