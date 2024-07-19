@@ -184,7 +184,7 @@ pub const Context = struct {
 
     /// Creates a JavaScript `Object`.
     pub fn createObject(self: Context) zjsc.Value {
-        return zjsc.Value.init_object(self);
+        return zjsc.Object.init(self);
     }
 
     pub fn createFunction(self: Context, name: []const u8, callback: jsc.JSObjectCallAsFunctionCallback) zjsc.Value {
