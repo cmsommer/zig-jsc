@@ -88,21 +88,20 @@ pub fn releaseString(string: JSStringRef) void {
     jsc.JSStringRelease(string);
 }
 
-pub fn toString(context: jsc.JSContextRef, value: JSValueRef) ![:0]u8 {
+pub fn toString(context: jsc.JSContextRef, value: JSValueRef) ![]u8 {
     if (!jsc.JSValueIsString(context, value)) {
         return error.ConvertError;
     }
 
     const jsstring = jsc.JSValueToStringCopy(context, value, null);
 
-    const count = jsc.JSStringGetLength(jsstring);
+    const count = jsc.JSStringGetLength(jsstring) + 1;
 
-    const buffer: [*c]u8 = 0;
-    const size = jsc.JSStringGetUTF8CString(jsstring, buffer, count);
-    _ = size; // autofix
+    var allocator = std.heap.page_allocator;
+    const buffer = try allocator.alloc(u8, count);
+    const size = jsc.JSStringGetUTF8CString(jsstring, buffer.ptr, count);
 
-    const a: [:0]u8 = std.mem.span(buffer);
-    return a;
+    return buffer[0..size];
 }
 
 test "Create Context" {

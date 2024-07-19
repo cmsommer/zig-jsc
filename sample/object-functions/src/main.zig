@@ -41,7 +41,7 @@ fn log(ctx: c_api.JSContextRef, function: c_api.JSObjectRef, this: c_api.JSObjec
     // const string = buffer[0..string_length];
 
     const out = std.io.getStdOut().writer();
-    out.print("log {s}", .{input}) catch {};
+    out.print("log {s}\n", .{input}) catch {};
     return zjsc.createUndefined(ctx);
 }
 
@@ -52,7 +52,7 @@ fn render(ctx: c_api.JSContextRef, function: c_api.JSObjectRef, this: c_api.JSOb
     _ = this; // autofix
     _ = function; // autofix
 
-    const out = std.io.getStdOut();
+    const out = std.io.getStdOut().writer();
     out.writeAll("Render") catch {};
 
     return zjsc.createUndefined(ctx);
