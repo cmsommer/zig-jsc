@@ -1,0 +1,26 @@
+name: Build webkit on linux
+
+on:
+  workflow_dispatch:
+
+env:
+  BUILD_TYPE: Release
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Install deps
+      run: sudo apt install -y libicu-dev python3 ruby bison flex cmake build-essential ninja-build git gperf
+
+    - name: Checkout webkit
+      uses: actions/checkout@v4
+      with: 
+        repository: WebKit/WebKit
+
+    - name: Configure CMake
+      run: cmake -GNinja -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DPORT=JSCOnly -B ${{github.workspace}}/build
+
+    - name: Build
+      run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
