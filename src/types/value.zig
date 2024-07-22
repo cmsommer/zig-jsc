@@ -50,9 +50,9 @@ pub const Value = struct {
     /// Creates a JavaScript value of the `Number` type.
     ///
     /// - Parameters:
-    ///   - value: The value to assign to the object.
+    ///   - value: The f64 value to assign to the object.
     ///   - context: The execution context to use.
-    pub fn init_number(comptime T: type, value: T, context: zjsc.Context) Value {
+    pub fn init_number(value: f64, context: zjsc.Context) Value {
         return init(context, jsc.JSValueMakeNumber(context.contextRef, value));
     }
 
@@ -61,7 +61,7 @@ pub const Value = struct {
     /// - Parameters:
     ///   - value: The value to assign to the object.
     ///   - context: The execution context to use.
-    pub fn init_string(value: []u8, context: zjsc.Context) Value {
+    pub fn init_string(value: []const u8, context: zjsc.Context) Value {
         const jsvalue: jsc.JSStringRef = jsc.JSStringCreateWithUTF8CString(value);
         defer {
             jsc.JSStringRelease(value);
@@ -82,3 +82,35 @@ pub const Value = struct {
         return zjsc.toString(self.context.contextRef, self.valueRef);
     }
 };
+
+fn log(ctx: jsc.JSContextRef, function: jsc.JSObjectRef, this: jsc.JSObjectRef, argc: usize, args: [*c]const jsc.JSValueRef, exp: [*c]jsc.JSValueRef) callconv(.C) jsc.JSValueRef {
+    _ = exp; // autofix
+    _ = args; // autofix
+    _ = argc; // autofix
+    _ = this; // autofix
+    _ = function; // autofix
+
+    const out = std.io.getStdOut().writer();
+    out.writeAll("log") catch {};
+
+    return zjsc.createUndefined(ctx);
+}
+test "Test creation" {
+    const context = zjsc.Context.init();
+
+    const value = Value.init(context, zjsc.createNumber(context.contextRef, 10));
+    const value_undefined = Value.init_undefined(context);
+    const value_bool = Value.init_bool(true, context);
+    const value_number = Value.init_number(5, context);
+    const value_string = Value.init_string("Test", context);
+    const value_null = Value.init_null(context);
+    const value_function = Value.init_function("log", log, context);
+
+    _ = value;
+    _ = value_undefined;
+    _ = value_bool;
+    _ = value_number;
+    _ = value_string;
+    _ = value_null;
+    _ = value_function;
+}

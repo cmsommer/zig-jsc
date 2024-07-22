@@ -173,7 +173,7 @@ pub const Context = struct {
     }
 
     /// Creates a JavaScript value of the `Number` type.
-    pub fn createNumber(self: zjsc.Context, comptime T: type, value: T) zjsc.Value {
+    pub fn createNumber(self: zjsc.Context, value: f64) zjsc.Value {
         return zjsc.Value.init_number(value, self);
     }
 
@@ -183,7 +183,7 @@ pub const Context = struct {
     }
 
     /// Creates a JavaScript `Object`.
-    pub fn createObject(self: Context) zjsc.Value {
+    pub fn createObject(self: Context) zjsc.Object {
         return zjsc.Object.init(self);
     }
 

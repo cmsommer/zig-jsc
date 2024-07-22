@@ -1,5 +1,4 @@
 const zjsc = @import("zig-jsc");
-
 const jsc = zjsc.c_api;
 
 pub const Object = struct {
@@ -40,3 +39,11 @@ pub const Object = struct {
         return zjsc.Value{};
     }
 };
+
+test "Test creation" {
+    const context = zjsc.Context.init();
+
+    const objk_value = context.createNumber(5);
+    const objk = context.createObject();
+    try objk.setProperty("fuck", objk_value);
+}

@@ -17,7 +17,7 @@ pub fn createContextGroup() jsc.JSContextGroupRef {
     return jsc.JSContextGroupCreate();
 }
 
-pub fn createContext(context_group: jsc.JSContextGroupCreate) jsc.JSGlobalContextRef {
+pub fn createContext(context_group: jsc.JSContextGroupRef) jsc.JSGlobalContextRef {
     const context: jsc.JSGlobalContextRef = jsc.JSGlobalContextCreateInGroup(context_group, null);
     return context;
 }
@@ -29,6 +29,10 @@ pub fn getGlobalObject(context: jsc.JSGlobalContextRef) jsc.JSObjectRef {
 
 pub fn getStringMaxSize(string: jsc.JSStringRef) usize {
     return jsc.JSStringGetMaximumUTF8CStringSize(string);
+}
+
+pub fn createNumber(context: jsc.JSGlobalContextRef, value: f64) jsc.JSValueRef {
+    return jsc.JSValueMakeNumber(context.contextRef, value);
 }
 
 pub fn createString(text: []const u8) jsc.JSStringRef {
@@ -105,6 +109,7 @@ pub fn toString(context: jsc.JSContextRef, value: JSValueRef) ![]u8 {
 }
 
 test "Create Context" {
-    const context = createContext();
+    const group = createContextGroup();
+    const context = createContext(group);
     _ = context; // autofix
 }
