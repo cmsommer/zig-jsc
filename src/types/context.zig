@@ -178,7 +178,7 @@ pub const Context = struct {
     }
 
     /// Creates a JavaScript value of the `String` type.
-    pub fn createString(self: zjsc.Context, value: []u8) zjsc.Value {
+    pub fn createString(self: zjsc.Context, value: []const u8) zjsc.Value {
         return zjsc.Value.init_string(value, self);
     }
 
@@ -202,3 +202,34 @@ pub const Context = struct {
         return zjsc.Value.init(self, zjsc.evaluateScript(self.contextRef, jsscript));
     }
 };
+
+fn log(ctx: jsc.JSContextRef, function: jsc.JSObjectRef, this: jsc.JSObjectRef, argc: usize, args: [*c]const jsc.JSValueRef, exp: [*c]jsc.JSValueRef) callconv(.C) jsc.JSValueRef {
+    _ = exp; // autofix
+    _ = args; // autofix
+    _ = argc; // autofix
+    _ = this; // autofix
+    _ = function; // autofix
+
+    const out = std.io.getStdOut().writer();
+    out.writeAll("log") catch {};
+
+    return zjsc.createUndefined(ctx);
+}
+
+test "Test creation" {
+    const context = Context.init();
+
+    const value_undefined = context.createUndefined();
+    const value_bool = context.createBool(true);
+    const value_number = context.createNumber(5);
+    const value_string = context.createString("Test");
+    const value_null = context.createNull();
+    const value_function = context.createFunction("log", log);
+
+    _ = value_undefined;
+    _ = value_bool;
+    _ = value_number;
+    _ = value_string;
+    _ = value_null;
+    _ = value_function;
+}

@@ -32,7 +32,7 @@ pub fn getStringMaxSize(string: jsc.JSStringRef) usize {
 }
 
 pub fn createNumber(context: jsc.JSGlobalContextRef, value: f64) jsc.JSValueRef {
-    return jsc.JSValueMakeNumber(context.contextRef, value);
+    return jsc.JSValueMakeNumber(context, value);
 }
 
 pub fn createString(text: []const u8) jsc.JSStringRef {
@@ -111,5 +111,6 @@ pub fn toString(context: jsc.JSContextRef, value: JSValueRef) ![]u8 {
 test "Create Context" {
     const group = createContextGroup();
     const context = createContext(group);
+
     _ = context; // autofix
 }

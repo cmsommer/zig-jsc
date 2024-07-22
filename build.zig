@@ -20,10 +20,7 @@ pub fn build(b: *std.Build) void {
     mod.addImport("zig-jsc", mod);
 
     lib.linkLibC();
-    // lib.root_module.addImport("zjsc", mod);
-    // lib.linkLibCpp();
 
-    // lib.addLibraryPath(.{ .cwd_relative = "/usr/lib/x86_64-linux-gnu/" });
     lib.addLibraryPath(b.path("jsc/lib/x86_64-linux/"));
     lib.linkSystemLibrary("JavaScriptCore");
 
@@ -52,6 +49,9 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+
+    lib_unit_tests.addLibraryPath(b.path("jsc/lib/x86_64-linux/"));
+    lib_unit_tests.linkSystemLibrary("JavaScriptCore");
 
     lib_unit_tests.root_module.addImport("zig-jsc", &lib_unit_tests.root_module);
     const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);

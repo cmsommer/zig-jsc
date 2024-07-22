@@ -62,9 +62,12 @@ pub const Value = struct {
     ///   - value: The value to assign to the object.
     ///   - context: The execution context to use.
     pub fn init_string(value: []const u8, context: zjsc.Context) Value {
-        const jsvalue: jsc.JSStringRef = jsc.JSStringCreateWithUTF8CString(value);
+        const buffer = std.heap.page_allocator.alloc(u8, value.len + 1) catch {
+            @panic("cannot alloc when creating string");
+        };
+        const jsvalue: jsc.JSStringRef = jsc.JSStringCreateWithUTF8CString(buffer.ptr);
         defer {
-            jsc.JSStringRelease(value);
+            jsc.JSStringRelease(jsvalue);
         }
 
         return init(context, jsc.JSValueMakeString(context.contextRef, jsvalue));
