@@ -21,10 +21,10 @@ pub fn build(b: *std.Build) void {
 
     lib.linkLibC();
 
-    lib.addLibraryPath(b.path("jsc/lib/x86_64-linux/"));
+    lib.addLibraryPath(b.path("lib/webkit-linux-x64/"));
     lib.linkSystemLibrary("JavaScriptCore");
 
-    mod.addLibraryPath(b.path("jsc/lib/x86_64-linux/"));
+    mod.addLibraryPath(b.path("lib/webkit-linux-x64/"));
     mod.linkSystemLibrary("JavaScriptCore", .{
         .needed = true,
     });
@@ -50,7 +50,7 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    lib_unit_tests.addLibraryPath(b.path("jsc/lib/x86_64-linux/"));
+    lib_unit_tests.addLibraryPath(b.path("lib/webkit-linux-x64/"));
     lib_unit_tests.linkSystemLibrary("JavaScriptCore");
 
     lib_unit_tests.root_module.addImport("zig-jsc", &lib_unit_tests.root_module);
