@@ -20,14 +20,23 @@ pub fn build(b: *std.Build) void {
     mod.addImport("zig-jsc", mod);
 
     lib.linkLibC();
+    lib.linkLibCpp();
 
-    lib.addLibraryPath(b.path("lib/webkit-linux-x64/"));
+    lib.addLibraryPath(b.path("lib/webkit-linux-x64-static/"));
+    lib.linkSystemLibrary("icudata");
+    lib.linkSystemLibrary("icui18n");
+    lib.linkSystemLibrary("icuuc");
+    lib.linkSystemLibrary("WTF");
     lib.linkSystemLibrary("JavaScriptCore");
+    lib.linkSystemLibrary("bmalloc");
 
-    mod.addLibraryPath(b.path("lib/webkit-linux-x64/"));
-    mod.linkSystemLibrary("JavaScriptCore", .{
-        .needed = true,
-    });
+    mod.addLibraryPath(b.path("lib/webkit-linux-x64-static/"));
+    mod.linkSystemLibrary("icudata", .{});
+    mod.linkSystemLibrary("icui18n", .{});
+    mod.linkSystemLibrary("icuuc", .{});
+    mod.linkSystemLibrary("WTF", .{});
+    mod.linkSystemLibrary("JavaScriptCore", .{});
+    mod.linkSystemLibrary("bmalloc", .{});
 
     // switch (target.result.os.tag) {
     //     .windows => {
@@ -49,9 +58,16 @@ pub fn build(b: *std.Build) void {
         .target = target,
         .optimize = optimize,
     });
+    lib_unit_tests.linkLibC();
+    lib_unit_tests.linkLibCpp();
 
-    lib_unit_tests.addLibraryPath(b.path("lib/webkit-linux-x64/"));
+    lib_unit_tests.addLibraryPath(b.path("lib/webkit-linux-x64-static/"));
+    lib_unit_tests.linkSystemLibrary("icudata");
+    lib_unit_tests.linkSystemLibrary("icui18n");
+    lib_unit_tests.linkSystemLibrary("icuuc");
+    lib_unit_tests.linkSystemLibrary("WTF");
     lib_unit_tests.linkSystemLibrary("JavaScriptCore");
+    lib_unit_tests.linkSystemLibrary("bmalloc");
 
     lib_unit_tests.root_module.addImport("zig-jsc", &lib_unit_tests.root_module);
     const run_lib_unit_tests = b.addRunArtifact(lib_unit_tests);
