@@ -12,7 +12,7 @@ jobs:
 
     steps:
     - name: Install deps
-      run: sudo apt install -y libicu-dev python3 ruby bison flex cmake build-essential ninja-build git gperf
+      run: sudo apt install -y libicu-dev python3 ruby bison flex cmake clang build-essential ninja-build git gperf
 
     - name: Checkout webkit
       uses: actions/checkout@v4
@@ -20,7 +20,7 @@ jobs:
         repository: WebKit/WebKit
 
     - name: Configure CMake
-      run: cmake -GNinja -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DPORT=JSCOnly -DENABLE_STATIC_JSC=ON -DUSE_THIN_ARCHIVES=OFF -B ${{github.workspace}}/build
+      run: cmake -GNinja -DCMAKE_C_COMPILER=clang -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=${{env.BUILD_TYPE}} -DPORT=JSCOnly -DENABLE_STATIC_JSC=ON -DUSE_THIN_ARCHIVES=OFF -B ${{github.workspace}}/build
 
     - name: Build
       run: cmake --build ${{github.workspace}}/build --config ${{env.BUILD_TYPE}}
