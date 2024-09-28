@@ -4,10 +4,6 @@ pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
-    const zig_jsc = b.dependency("zig_jsc", .{ .target = target, .optimize = optimize });
-    const lib = zig_jsc.artifact("zig-jsc");
-    const mod = zig_jsc.module("zig-jsc");
-
     const exe = b.addExecutable(.{
         .name = "zig-jsc-sample",
         .root_source_file = b.path("src/main.zig"),
@@ -15,7 +11,11 @@ pub fn build(b: *std.Build) void {
         .optimize = optimize,
     });
 
-    exe.linkLibrary(lib);
+    const zig_jsc = b.dependency("zig_jsc", .{ .target = target, .optimize = optimize });
+    const mod = zig_jsc.module("zig-jsc");
+
+    exe.linkLibC();
+    exe.linkLibCpp();
 
     exe.root_module.addImport("zig-jsc", mod);
     b.installArtifact(exe);
