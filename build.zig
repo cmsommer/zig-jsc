@@ -15,12 +15,8 @@ pub fn build(b: *std.Build) void {
     mod.addImport("zig-jsc", mod);
 
     mod.addIncludePath(b.path("lib/include/"));
-    mod.addLibraryPath(b.path("lib/webkit-linux-x64-static/"));
-    mod.linkSystemLibrary("icui18n", .{ .preferred_link_mode = .static });
-    mod.linkSystemLibrary("icuuc", .{ .preferred_link_mode = .static });
-    mod.linkSystemLibrary("WTF", .{ .preferred_link_mode = .static });
+    mod.addLibraryPath(b.path("lib/webkit-linux-x64/"));
     mod.linkSystemLibrary("JavaScriptCore", .{ .preferred_link_mode = .static });
-    mod.linkSystemLibrary("bmalloc", .{ .preferred_link_mode = .static });
 
     // switch (target.result.os.tag) {
     //     .windows => {
